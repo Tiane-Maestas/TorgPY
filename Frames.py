@@ -125,6 +125,21 @@ class DayFrame(TimeFrame):
     def createEventSlots(self):
         for i in range(len(self.timeLabels)):
             self.eventLabels.append(Label(self.workingCanvas, text='', anchor='w', relief='flat', bg=darkgray, fg='white', font=('Arial',12)))
+            self.eventLabels[i].bind('<Enter>', self.entered)
+            self.eventLabels[i].bind('<Leave>', self.exit)
+            self.eventLabels[i].bind('<Button-1>', self.clicked)
+
+    def entered(self, event):
+        event.widget['bg'] = 'orange'
+
+    def exit(self, event):
+        event.widget['bg'] = darkgray
+        #puts back events to their color and not darkgray
+        self.changeWorkingDay(self.workingDate)
+
+    def clicked(self, event):
+        #call another frame that will display the event info or create an event on that day and time
+        pass
 
     def displayEventSlots(self):
         currentY = 0
