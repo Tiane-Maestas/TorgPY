@@ -124,7 +124,7 @@ class DayFrame(TimeFrame):
 
     def createEventSlots(self):
         for i in range(len(self.timeLabels)):
-            self.eventLabels.append(Label(self.workingCanvas, text='', anchor='w', relief='flat', bg=darkgray, fg='white', font=('Arial',14)))
+            self.eventLabels.append(Label(self.workingCanvas, text='', anchor='w', relief='flat', bg=darkgray, fg='white', font=('Arial',12)))
 
     def displayEventSlots(self):
         currentY = 0
