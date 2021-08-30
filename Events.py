@@ -13,6 +13,7 @@ def getDayOfTheWeek(date):
 class SingleEvent():
     #list of all single events created
     allSingleEvents = []
+    lastSavedIndex = 0
     def __init__(self, title, date, startTime, endTime, notes, repeat, reminder, color, concreteBool):
         #data kept for a single event
         self.title = title
@@ -27,6 +28,7 @@ class SingleEvent():
         self.color = color
         #used to quickly access even info through day events
         self.eventNum = len(SingleEvent.allSingleEvents)
+        self.eventNum = str(self.eventNum)
         SingleEvent.allSingleEvents.append(self)
         self.addToDayEvent()
 
@@ -39,12 +41,25 @@ class SingleEvent():
         except KeyError:
             DayEvent.allDayEvents[self.date] = DayEvent(self.date, self)
             return
-        
         day.addEvent(self)
 
 
     def save(self):
-        pass
+        with open("singleEvents.csv", "w") as f:
+            if SingleEvent.lastSavedIndex == 0:
+                f.write('#,Title,Date,StartTime,EndTime,Notes,Repeat,Reminder,Color,ConcreteBool\n')
+            for index in range(SingleEvent.lastSavedIndex, len(SingleEvent.allSingleEvents)):
+                line = SingleEvent.allSingleEvents[index].eventNum + ','
+                line = line + SingleEvent.allSingleEvents[index].title + ","
+                line = line + SingleEvent.allSingleEvents[index].date + ","
+                line = line + SingleEvent.allSingleEvents[index].startTime + ','
+                line = line + SingleEvent.allSingleEvents[index].endTime + ','
+                line = line + repr(SingleEvent.allSingleEvents[index].notes) + ','
+                line = line + SingleEvent.allSingleEvents[index].repeat + ','
+                line = line + SingleEvent.allSingleEvents[index].reminder + ','
+                line = line + SingleEvent.allSingleEvents[index].color + ','
+                line = line + str(SingleEvent.allSingleEvents[index].concreteBool) + '\n'
+                f.write(line)
 
     def changeTime(self, startTime, endTime):
         self.startTime = startTime

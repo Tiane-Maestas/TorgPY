@@ -138,8 +138,10 @@ class DayFrame(TimeFrame):
         self.changeWorkingDay(self.workingDate)
 
     def clicked(self, event):
-        #call another frame that will display the event info or create an event on that day and time
-        pass
+        Frame.allFramesInUse[3].getFrame().tkraise()
+        index = self.eventLabels.index(event.widget)
+        time = TimeFrame.timesInADay[index]
+        Frame.allFramesInUse[3].setFrame(self.workingDate, time)
 
     def displayEventSlots(self):
         currentY = 0
@@ -186,7 +188,7 @@ class DayFrame(TimeFrame):
         elif plusDay == date:
             self.title['text'] = "Tomorrow: " + date
         else:
-            self.title['text'] = date
+            self.title['text'] = getDayOfTheWeek(date) + ": " + date
 
     def formatDate(self, date):
         dd = str(date.day)
@@ -360,6 +362,24 @@ class CreateSingleEventFrame(CreateFrame):
         Frame.allFramesInUse[0].getFrame().tkraise()
         #bring up the day that was just added too
         Frame.allFramesInUse[0].changeWorkingDay(date)
+
+    def setFrame(self, date, sTime):
+        dd = date[3:5]
+        mm = date[0:2]
+        index = self.monthsInNum.index(mm)
+        mm = self.possibleMonths[index]
+        yyyy = date[6:len(date)]
+        self.dd.set(dd)
+        self.mm.set(mm)
+        self.yyyy.set(yyyy)
+        self.start.set(sTime)
+        self.end.set('end')
+        self.repeat.set('repeat')
+        self.reminder.set('reminder')
+        self.color.set('color')
+        self.concreteBut.deselect()
+        self.titleEntry.delete(0, END)
+        self.noteBox.delete(1.0, END)
 
     def decrementPressed(self):
         Frame.allFramesInUse[5].getFrame().tkraise()
