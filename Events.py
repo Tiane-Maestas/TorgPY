@@ -43,7 +43,6 @@ class SingleEvent():
             return
         day.addEvent(self)
 
-
     def save(self):
         with open("singleEvents.csv", "w") as f:
             if SingleEvent.lastSavedIndex == 0:

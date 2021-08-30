@@ -4,6 +4,8 @@ from Events import *
 import datetime
 
 darkgray = '#1B1D1F'
+offwhite = '#AEBFC7'
+lightergray = '#333739'
 
 class Frame():
     screenwidth = 1920
@@ -18,10 +20,10 @@ class Frame():
         self.frame.columnconfigure(2, weight=1)
         self.frame.rowconfigure(0, weight=1)
         #creates title
-        self.title = tk.Label(self.frame, text='Title', bg='#0C273F', font=('Arial', 22), fg='white')
+        self.title = tk.Label(self.frame, text='Title', bg='#0C273F', font=('Arial', 22), fg=offwhite)
         #creates buttons
-        self.decrementBtn = tk.Button(self.frame, text='<',command=lambda:self.decrementPressed(),bg='#02427A', relief='groove', activebackground='orange', fg='white')
-        self.incrementBtn = tk.Button(self.frame, text='>',command=lambda:self.incrementPressed(),bg='#02427A', relief='groove', activebackground='orange', fg='white')
+        self.decrementBtn = tk.Button(self.frame, text='<',command=lambda:self.decrementPressed(),bg='#02427A', relief='groove', activebackground='orange', fg=offwhite)
+        self.incrementBtn = tk.Button(self.frame, text='>',command=lambda:self.incrementPressed(),bg='#02427A', relief='groove', activebackground='orange', fg=offwhite)
         #stores the screen resolution
         Frame.screenwidth = window.winfo_screenwidth()
         Frame.screenheight = window.winfo_screenheight()
@@ -93,7 +95,7 @@ class TimeFrame(Frame):
     def createTimeLabels(self):
         for time in TimeFrame.timesInADay:
             #adds the time label to the canvas in order to use the place command
-            self.timeLabels.append(Label(self.workingCanvas, text=time, relief='flat', bg='#02427A', fg='white'))
+            self.timeLabels.append(Label(self.workingCanvas, text=time, relief='flat', bg='#02427A', fg=offwhite))
 
     def placeTimeLabels(self):
         currentY = 0
@@ -124,7 +126,7 @@ class DayFrame(TimeFrame):
 
     def createEventSlots(self):
         for i in range(len(self.timeLabels)):
-            self.eventLabels.append(Label(self.workingCanvas, text='', anchor='w', relief='flat', bg=darkgray, fg='white', font=('Arial',12)))
+            self.eventLabels.append(Label(self.workingCanvas, text='', anchor='w', relief='flat', bg=darkgray, fg=offwhite, font=('Arial',12)))
             self.eventLabels[i].bind('<Enter>', self.entered)
             self.eventLabels[i].bind('<Leave>', self.exit)
             self.eventLabels[i].bind('<Button-1>', self.clicked)
@@ -228,7 +230,7 @@ class CreateFrame(Frame):
                      '2030','2031']
     possibleRepeats = ['Yearly','Weekly','Every 10 Weeks'] #eventually add every 'n' weeks through options
     possibleReminders = ['1 Week Before', '3 Days Before', '1 Day Before', 'The Day Of']
-    possibleColors = ['white','black','red','green','blue','cyan','yellow','magenta']
+    possibleColors = ['pink','black','red','green','blue','purple','darkgreen','magenta']
     def __init__(self, window):
         Frame.__init__(self, window)
         #configures grid placements of allwidgets
@@ -255,10 +257,10 @@ class CreateSingleEventFrame(CreateFrame):
         #changes title
         self.title['text'] = 'Create Event'
         #creates title label and entry box
-        self.promptTitle = Label(self.workingCanvas, text='Enter Title:', bg='#02427A', relief='flat', fg='white', font=('Arial',14))
+        self.promptTitle = Label(self.workingCanvas, text='Enter Title:', bg='#02427A', relief='flat', fg=offwhite, font=('Arial',14))
         self.titleEntry = Entry(self.workingCanvas, width=32, font=('Arial',14))
         #creates date label and selection boxes
-        self.promptDate = Label(self.workingCanvas, text='Enter Date:', bg='#02427A', relief='flat', fg='white', font=('Arial',14))
+        self.promptDate = Label(self.workingCanvas, text='Enter Date:', bg='#02427A', relief='flat', fg=offwhite, font=('Arial',14))
         self.dd = StringVar()
         self.dd.set('dd')
         self.dayOptions = OptionMenu(self.workingCanvas, self.dd, *CreateFrame.possibleDays)
@@ -269,34 +271,34 @@ class CreateSingleEventFrame(CreateFrame):
         self.yyyy.set('yyyy')
         self.yearOptions = OptionMenu(self.workingCanvas, self.yyyy, *CreateFrame.possibleYears)
         #creates start and end time label and selection boxes
-        self.promptStart = Label(self.workingCanvas, text='Enter Start Time:', bg='#02427A', relief='flat', fg='white', font=('Arial',14))
+        self.promptStart = Label(self.workingCanvas, text='Enter Start Time:', bg='#02427A', relief='flat', fg=offwhite, font=('Arial',14))
         self.start = StringVar()
         self.start.set('start')
         self.startOptions = OptionMenu(self.workingCanvas, self.start, *TimeFrame.timesInADay)
-        self.promptEnd = Label(self.workingCanvas, text='Enter End Time:', bg='#02427A', relief='flat', fg='white', font=('Arial',14))
+        self.promptEnd = Label(self.workingCanvas, text='Enter End Time:', bg='#02427A', relief='flat', fg=offwhite, font=('Arial',14))
         self.end = StringVar()
         self.end.set('end')
         self.endOptions = OptionMenu(self.workingCanvas, self.end, *TimeFrame.timesInADay)
         #creates note label and entry box
-        self.promptNote = Label(self.workingCanvas, text='Notes:', bg='#02427A', relief='flat', fg='white', font=('Arial',14))
+        self.promptNote = Label(self.workingCanvas, text='Notes:', bg='#02427A', relief='flat', fg=offwhite, font=('Arial',14))
         self.noteBox = Text(self.workingCanvas, width=48, height=5, font=('Arial',14))
         #creates repeat prompt and selection box
-        self.promptRepeat = Label(self.workingCanvas, text='Repeat:', bg='#02427A', relief='flat', fg='white', font=('Arial',14))
+        self.promptRepeat = Label(self.workingCanvas, text='Repeat:', bg='#02427A', relief='flat', fg=offwhite, font=('Arial',14))
         self.repeat = StringVar()
         self.repeat.set('repeat')
         self.repeatOptions = OptionMenu(self.workingCanvas, self.repeat, *CreateFrame.possibleRepeats)
         #creates Reminder prompt and selection box
-        self.promptReminder = Label(self.workingCanvas, text='Remind Me:', bg='#02427A', relief='flat', fg='white', font=('Arial',14))
+        self.promptReminder = Label(self.workingCanvas, text='Remind Me:', bg='#02427A', relief='flat', fg=offwhite, font=('Arial',14))
         self.reminder = StringVar()
         self.reminder.set('reminder')
         self.reminderOptions = OptionMenu(self.workingCanvas, self.reminder, *CreateFrame.possibleReminders)
         #creates color prompt and selection box
-        self.promptColor = Label(self.workingCanvas, text='Color:', bg='#02427A', relief='flat', fg='white', font=('Arial',14))
+        self.promptColor = Label(self.workingCanvas, text='Color:', bg='#02427A', relief='flat', fg=offwhite, font=('Arial',14))
         self.color = StringVar()
         self.color.set('color')
         self.colorOptions = OptionMenu(self.workingCanvas, self.color, *CreateFrame.possibleColors)
         #creates concrete prompt and check box
-        self.promptConcrete = Label(self.workingCanvas, text='Concrete Event:', bg='#02427A', relief='flat', fg='white', font=('Arial',14))
+        self.promptConcrete = Label(self.workingCanvas, text='Concrete Event:', bg='#02427A', relief='flat', fg=offwhite, font=('Arial',14))
         self.concrete = tk.BooleanVar()
         self.concreteBut = Checkbutton(self.workingCanvas, variable=self.concrete, text='   ', onvalue=True, offvalue=False, font=('Arial',10), indicatoron=False, bg='blue')
         self.concreteBut.deselect()

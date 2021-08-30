@@ -8,6 +8,8 @@ windowMinHeight = 500
 allFrames = []
 allMenus = []
 darkgray = '#1B1D1F'
+offwhite = '#AEBFC7'
+lightergray = '#333739'
 
 def createFrames(window):
     allFrames.append(DayFrame(window))
