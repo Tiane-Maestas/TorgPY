@@ -55,24 +55,23 @@ def main():
     rootWindow.title('Organizer')
     rootWindow.geometry(windowDefaultGeometry)
     rootWindow.minsize(windowMinWidth, windowMinHeight)
+    rootWindow.iconbitmap("Images/TorgLogo.ico")
     rootWindow.tk_setPalette(darkgray)
     rootWindow.rowconfigure(0, weight=1)
     rootWindow.columnconfigure(0, weight=1)
+    Frame.screenwidth = rootWindow.winfo_screenwidth()
+    Frame.screenheight = rootWindow.winfo_screenheight()
 
     #creates and places all frames
     createFrames(rootWindow)
     placeFrames()
-    #allows access of all other working frames through inheritence
+    #allows access of all working frames to all frames through inheritence
     allFrames[0].setAllFrames(allFrames)
 
     #create and places a navigation bar
     menuBar = Menu(rootWindow)
     rootWindow.config(menu=menuBar)
     configureNavigationBar(menuBar)
-
-    #---------Testing---------
-    
-    #---------Testing---------
 
     #places dayview on top
     showFrame(allFrames[0].getFrame())

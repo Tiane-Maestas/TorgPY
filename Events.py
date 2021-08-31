@@ -9,7 +9,7 @@ def getDayOfTheWeek(date):
     weekNum = datetime.date(year,month,day).weekday()
     return weekDays[weekNum]
 
-def open():
+def uploadEvents():
     pass
 
 #holds a single event at a single time group and date

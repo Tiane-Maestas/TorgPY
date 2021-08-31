@@ -24,9 +24,6 @@ class Frame():
         #creates buttons
         self.decrementBtn = tk.Button(self.frame, text='<',command=lambda:self.decrementPressed(),bg='#02427A', relief='groove', activebackground='orange', fg=offwhite)
         self.incrementBtn = tk.Button(self.frame, text='>',command=lambda:self.incrementPressed(),bg='#02427A', relief='groove', activebackground='orange', fg=offwhite)
-        #stores the screen resolution
-        Frame.screenwidth = window.winfo_screenwidth()
-        Frame.screenheight = window.winfo_screenheight()
 
     def place(self):
         #placing frame in window
@@ -258,7 +255,7 @@ class CreateSingleEventFrame(CreateFrame):
         self.title['text'] = 'Create Event'
         #creates title label and entry box
         self.promptTitle = Label(self.workingCanvas, text='Enter Title:', bg='#02427A', relief='flat', fg=offwhite, font=('Arial',14))
-        self.titleEntry = Entry(self.workingCanvas, width=32, font=('Arial',14))
+        self.titleEntry = tk.Entry(self.workingCanvas, width=32, font=('Arial',14))
         #creates date label and selection boxes
         self.promptDate = Label(self.workingCanvas, text='Enter Date:', bg='#02427A', relief='flat', fg=offwhite, font=('Arial',14))
         self.dd = StringVar()
@@ -299,9 +296,9 @@ class CreateSingleEventFrame(CreateFrame):
         self.colorOptions = OptionMenu(self.workingCanvas, self.color, *CreateFrame.possibleColors)
         #creates concrete prompt and check box
         self.promptConcrete = Label(self.workingCanvas, text='Concrete Event:', bg='#02427A', relief='flat', fg=offwhite, font=('Arial',14))
-        self.concrete = tk.BooleanVar()
-        self.concreteBut = Checkbutton(self.workingCanvas, variable=self.concrete, text='   ', onvalue=True, offvalue=False, font=('Arial',10), indicatoron=False, bg='blue')
-        self.concreteBut.deselect()
+        self.concrete = tk.IntVar()
+        self.concreteBut = Checkbutton(self.workingCanvas, variable=self.concrete, text='   ', font=('Arial',10), indicatoron=False, bg=darkgray)
+        self.concreteBut.select()
         #creates a button to save information and quit page
         self.saveBut = Button(self.workingCanvas, text='Save and Quit', font=('Arial',14), command=lambda:self.saveandquit())
     
