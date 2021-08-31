@@ -2,7 +2,7 @@ import tkinter as tk
 from Frames import *
 from Events import *
 
-windowDefaultGeometry = '850x500'
+windowDefaultGeometry = '850x500+300+175'
 windowMinWidth = 850
 windowMinHeight = 500
 allFrames = []

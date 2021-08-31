@@ -9,6 +9,9 @@ def getDayOfTheWeek(date):
     weekNum = datetime.date(year,month,day).weekday()
     return weekDays[weekNum]
 
+def open():
+    pass
+
 #holds a single event at a single time group and date
 class SingleEvent():
     #list of all single events created
