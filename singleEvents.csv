@@ -1,1 +1,4 @@
 #,Title,Date,StartTime,EndTime,Notes,Repeat,Reminder,Color,ConcreteBool
+0,Alex's Birthday,02/23/2021,1:00AM,1:30AM,,Yearly,1 Week Before,pink,1
+1,Flight to Amsterdam,09/03/2021,6:00AM,7:30AM,Arrive an hour and a half early ,repeat,reminder,green,1
+2,Flight to LAX,09/03/2021,9:30AM,12:00PM,Leaves at 9:50 ,repeat,reminder,green,1

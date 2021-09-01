@@ -50,10 +50,13 @@ def main():
     root.geometry(windowDefaultGeometry) 
     root.iconbitmap("Images/TorgLogo.ico")
     root.minsize(windowMinWidth, windowMinHeight)
-    root.tk_setPalette(darkgray)
+    root.tk_setPalette(DGRAY)
     #initializes screen resolution in my Frame classes
     Frame.screenwidth = root.winfo_screenwidth()
     Frame.screenheight = root.winfo_screenheight()
+
+    #uploads events data
+    uploadEvents()
 
     #--------------------Start of Custom Title Bar by Anthony Terrano and edited by Me--------------------
     root.minimized = False #only to know if root is minimized
@@ -101,8 +104,8 @@ def main():
     minimize_button = Button(title_bar, text=' − ',command=minimize_me,bg='black',padx=2,pady=2,bd=0,fg=OFFWHITE,font=("arial", 13),highlightthickness=0)
     title_bar_title = Label(title_bar, text=tk_title, bg='black',bd=0,fg=OFFWHITE,font=("arial", 13),highlightthickness=0, anchor=CENTER)
 
-    viewMenu = Menubutton(title_bar, activebackground='orange',text='View',font=("arial", 13), fg=OFFWHITE, bg='black')
-    viewOptions = Menu(viewMenu, tearoff=0, activebackground='orange', bg='black')
+    viewMenu = Menubutton(title_bar, activebackground='orange',text='View',font=("arial", 13), fg=OFFWHITE, bg='black', bd=0)
+    viewOptions = Menu(viewMenu, tearoff=0, activebackground='orange', bg='black', bd=0, relief='solid', border=0)
     viewMenu["menu"] = viewOptions
     viewOptions.add_command(label='Day View', command=lambda:showFrame(allFrames[0].getFrame()))
     viewOptions.add_command(label='Week View', command=lambda:showFrame(allFrames[1].getFrame()))
