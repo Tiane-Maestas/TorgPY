@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import *
+from tkinter import messagebox
 from Events import *
 import datetime
 
@@ -230,7 +231,7 @@ class CreateFrame(Frame):
                      '2030','2031']
     possibleRepeats = ['Yearly','Weekly','Every 10 Weeks'] #eventually add every 'n' weeks through options
     possibleReminders = ['1 Week Before', '3 Days Before', '1 Day Before', 'The Day Of']
-    possibleColors = ['pink','black','red','green','blue','purple','darkgreen','magenta']
+    possibleColors = ['pink','black','red','green','blue','yellow','darkgreen','magenta']
     def __init__(self, window):
         Frame.__init__(self, window)
         #configures grid placements of allwidgets
@@ -339,22 +340,51 @@ class CreateSingleEventFrame(CreateFrame):
         self.saveBut.place(anchor='n', relx=.5, rely=.9)
 
     def saveandquit(self):
-        #need to check inputs to see if valid
+        #handles title inputs
         title = self.titleEntry.get()
+        if title == "":
+            answer = messagebox.askretrycancel('Incorect Input','No Title! Try Again.')
+            if(answer == True):
+                return
+            else:
+                Frame.allFramesInUse[0].getFrame().tkraise()
+                return
 
+        #handles date inputs
         dd = self.dd.get()
-        mm = CreateFrame.monthsInNum[CreateFrame.possibleMonths.index(self.mm.get())]
+        mm = self.mm.get()
         yyyy = self.yyyy.get()
+        if dd == "dd" or mm == "mm" or yyyy == "yyyy":
+            answer = messagebox.askretrycancel('Incorect Input','Missing Date! Try Again.')
+            if(answer == True):
+                return
+            else:
+                Frame.allFramesInUse[0].getFrame().tkraise()
+                return
+
+        mm = CreateFrame.monthsInNum[CreateFrame.possibleMonths.index(mm)]
         date = mm + '/' + dd + '/' + yyyy
         
+        #handles time inputs
         startTime = self.start.get()
         endTime = self.end.get()
+        if startTime == "start" or endTime == "end":
+            answer = messagebox.askretrycancel('Incorect Input','Missing Time! Try Again.')
+            if(answer == True):
+                return
+            else:
+                Frame.allFramesInUse[0].getFrame().tkraise()
+                return
 
         notes = self.noteBox.get(1.0, END)
 
         repeat = self.repeat.get()
         reminder = self.reminder.get()
+
+        #handles color input
         color = self.color.get()
+        if color == "color":
+            color = 'purple'
 
         concrete = self.concrete.get()
 
