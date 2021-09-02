@@ -3,6 +3,7 @@ from tkinter import *
 from tkinter import messagebox
 from Events import *
 import datetime
+import math
 
 #Colors
 LRGRAY = '#333739' 
@@ -22,7 +23,7 @@ class Frame():
         self.frame.columnconfigure(0, weight=1)
         self.frame.columnconfigure(1, weight=64)
         self.frame.columnconfigure(2, weight=1)
-        self.frame.rowconfigure(0, weight=1)
+        self.frame.rowconfigure(0, weight=8)
         #creates title
         self.title = tk.Label(self.frame, text='Title', bg=LRGRAY, font=('Arial', 22), fg=OFFWHITE)
         #creates buttons
@@ -64,8 +65,8 @@ class TimeFrame(Frame):
                    '9:00PM','9:30PM','10:00PM','10:30PM','11:00PM','11:30PM','12:00AM','12:30AM']
     def __init__(self, window):
         Frame.__init__(self, window)
-        #configures grid placements of time and scrollbar
-        self.frame.rowconfigure(1, weight=64)
+        #configures grid placements of time and scrollbar and allows room for week view frame configuration
+        self.frame.rowconfigure(1, weight=128)
         #initializes time and event canvas
         self.timeEventCanvas = Canvas(self.frame, bg='black', highlightthickness=0)
         #initializes a scroll bar and configures canvas
@@ -82,24 +83,24 @@ class TimeFrame(Frame):
         self.timeLabels = []
         self.createTimeLabels()
         #using screen resolution creates label dimensions
-        TimeFrame.labelHeight = (2*Frame.screenheight)/len(self.timeLabels)
+        TimeFrame.labelHeight = (2*Frame.screenheight)/(len(self.timeLabels)) #MIGHT NEED TO FIND CLOSEST DIVISIBLE HEIGHT OF LENGTH
 
-    def place(self):
+    def place(self, startingy):
         Frame.place(self)
         #places time and event canvas
         self.timeEventCanvas.grid(row=1, column=0, sticky='nsew', columnspan=2)
         #places a scroll bar
         self.scrollbar.grid(row=1, column=2, sticky='nsew')
         #place time labels in working frame
-        self.placeTimeLabels()
+        self.placeTimeLabels(startingy)
 
     def createTimeLabels(self):
         for time in TimeFrame.timesInADay:
             #adds the time label to the canvas in order to use the place command
             self.timeLabels.append(Label(self.workingCanvas, text=time, relief='flat', bg=LRGRAY, fg=OFFWHITE))
 
-    def placeTimeLabels(self):
-        currentY = 0
+    def placeTimeLabels(self, startingy):
+        currentY = startingy
         for label in self.timeLabels:
             label.place(x=TimeFrame.timelabelX, y=currentY, width=TimeFrame.timelabelWidth, height=TimeFrame.labelHeight)
             currentY+=TimeFrame.labelHeight
@@ -108,7 +109,7 @@ class TimeFrame(Frame):
 
 class DayFrame(TimeFrame):
     eventlabelX = TimeFrame.timelabelWidth
-    eventlabelWidth = Frame.screenwidth - TimeFrame.timelabelWidth
+    eventlabelWidth = Frame.screenwidth
     def __init__(self, window):
         TimeFrame.__init__(self, window)
         #creates and intializes empty events for every time slot
@@ -122,7 +123,8 @@ class DayFrame(TimeFrame):
         self.changeTitle(self.workingDate)
 
     def place(self):
-        TimeFrame.place(self)
+        #param 2 allows room for week day names
+        TimeFrame.place(self, 0)
         self.displayEventSlots()
 
     def createEventSlots(self):
@@ -177,7 +179,6 @@ class DayFrame(TimeFrame):
             return
         self.updateEventSlots(day)
 
-    #needs more cases for between months and years
     def changeTitle(self, date):
         dd = int(self.todaysDate[3:5])
         mm = int(self.todaysDate[0:2])
@@ -456,12 +457,165 @@ class CreateWeekEventFrame(CreateFrame):
 
 
 class WeekFrame(TimeFrame):
+    daysInAWeek = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+    widthPad = TimeFrame.timelabelWidth/7
+    labelWidth = (Frame.screenwidth-TimeFrame.timelabelWidth)/(len(daysInAWeek)) #Default fallback value
     def __init__(self, window):
         TimeFrame.__init__(self, window)
+        #Allows placements of a second scrollbar and labels for days of the week
+        self.frame.rowconfigure(2, weight=1)
+        #scrollbar for view of days
+        self.scrollbarx = Scrollbar(self.frame, orient=HORIZONTAL, bg='black', command=self.timeEventCanvas.xview)
+        self.timeEventCanvas.configure(xscrollcommand=self.scrollbarx.set)
+        self.timeEventCanvas.bind('<Configure>', lambda e: self.timeEventCanvas.configure(scrollregion = self.timeEventCanvas.bbox('all')))
+        #fills the corners of the scrollbar and above time labels
+        self.dayNameLabel = Label(self.workingFrame,text="Day:",relief='flat', bg=LRGRAY, fg=OFFWHITE, font=('Arial',12))
+        self.fillLabel1 = Label(self.frame,text="",relief='flat', bg=LRGRAY, fg=OFFWHITE, font=('Arial',12))
+        self.fillLabel2 = Label(self.frame,text="",relief='flat', bg=LRGRAY, fg=OFFWHITE, font=('Arial',12))
+        #the first index of each array is the day title the rest are the events
+        self.dayLabels = []
+        self.createDaySlots()
+        #deals with weird math of devide by 7
+        self.setLabelWidth()
+        #change title
+        today = datetime.date.today()
+        self.todaysDate = self.formatDate(today)
+        self.workingDate = self.findMon(today)
+        self.thisWeek = self.workingDate
+        self.changeTitle(self.workingDate, self.nextWeek)
+
+    def findMon(self, date):
+        day = getDayOfTheWeek(self.todaysDate)
+        changeBy = WeekFrame.daysInAWeek.index(day)
+        self.nextWeek = self.formatDate((date - datetime.timedelta(days=changeBy)) + datetime.timedelta(weeks=1))
+        self.lastWeek = self.formatDate((date - datetime.timedelta(days=changeBy)) - datetime.timedelta(weeks=1))
+        thisMon = self.formatDate(date - datetime.timedelta(days=changeBy))
+        return thisMon
+
+    def setLabelWidth(self):
+        multiple = 0
+        closestMultiple = 0
+        index=0
+        while multiple <= Frame.screenwidth:
+            multiple = index * len(WeekFrame.daysInAWeek)
+            if abs(Frame.screenwidth-multiple) < abs(Frame.screenwidth-closestMultiple):
+                closestMultiple = multiple
+            index+=1
+        WeekFrame.labelWidth = closestMultiple/len(WeekFrame.daysInAWeek) - WeekFrame.widthPad
+            
 
     def place(self):
-        TimeFrame.place(self)
+        #param 2 allows room for week day names
+        TimeFrame.place(self, TimeFrame.labelHeight)
+        #places scrollbar
+        self.scrollbarx.grid(row=2, column=1, sticky='nsew')
+        self.fillLabel1.grid(row=2, column=0, sticky='nsew')
+        self.fillLabel2.grid(row=2, column=2, sticky='nsew')
 
+        #places day name label
+        self.dayNameLabel.place(x=TimeFrame.timelabelX, y=0, width=TimeFrame.timelabelWidth, height=TimeFrame.labelHeight)
+
+        self.displayDaySlots()
+
+    def createDaySlots(self):
+        for i in range(len(WeekFrame.daysInAWeek)):
+            self.dayLabels.append([Label(self.workingCanvas, text=WeekFrame.daysInAWeek[i], anchor='center', relief='flat', bg=LRGRAY, fg=OFFWHITE, font=('Arial',12))])
+            for j in range(len(self.timeLabels)-1):
+                self.dayLabels[i].append(Label(self.workingCanvas, text='', anchor='w', relief='flat', bg=DGRAY, fg=OFFWHITE, font=('Arial',12)))
+                self.dayLabels[i][j+1].bind('<Enter>', self.entered)
+                self.dayLabels[i][j+1].bind('<Leave>', self.exit)
+                self.dayLabels[i][j+1].bind('<Button-1>', self.clicked)
+
+    def entered(self, event):
+        event.widget['bg'] = HIGHLIGHTCOLOR
+
+    def exit(self, event):
+        event.widget['bg'] = DGRAY
+        #puts back events to their color and not darkgray
+        #self.changeWorkingDay(self.workingDate)
+
+    def clicked(self, event):
+        pass
+        #Frame.allFramesInUse[3].getFrame().tkraise()
+        tindex = 0
+        dindex = 0
+        for list in self.dayLabels:
+            try:
+                tindex = list.index(event.widget) - 1
+            except ValueError:
+                continue
+            dindex+=1    
+        time = TimeFrame.timesInADay[tindex]
+
+        #Frame.allFramesInUse[3].setFrame(self.workingDate, time)
+
+    def displayDaySlots(self):
+        currentY = 0
+        currentX = DayFrame.eventlabelX
+        for list in self.dayLabels:
+            for label in list:
+                label.place(x=currentX, y=currentY, width=WeekFrame.labelWidth, height=TimeFrame.labelHeight)
+                currentY+=TimeFrame.labelHeight
+            currentX+=WeekFrame.labelWidth
+            currentY=0
+
+    def changeWorkingWeek(self, dateS, dateE):
+        self.workingDate = dateS
+        self.changeTitle(dateS, dateE)
+        self.clearAllSlots()
+        mon = None
+        try:
+	        mon = DayEvent.allDayEvents[dateS]
+        except KeyError:
+            pass
+        if mon != None:
+            self.updateMonSlots(mon)
+
+
+    def changeTitle(self, dateS, dateE):
+        #finds the new week number
+        dd = int(dateS[3:5])
+        mm = int(dateS[0:2])
+        yyyy = int(dateS[6:len(dateS)])
+        newWeek = datetime.datetime(yyyy, mm, dd)
+        yr = newWeek.year
+        weekNumber = ((newWeek - datetime.datetime(yr,1,1)).days/7) + 1
+        self.weekNumber = str(int(weekNumber))
+        
+        if self.workingDate == self.thisWeek:
+            self.title['text'] = "This Week: " + dateS + "-" + dateE + " (" + self.weekNumber + ")"
+        elif self.workingDate == self.nextWeek:
+            self.title['text'] = "Next Week: " + dateS + "-" + dateE + " (" + self.weekNumber + ")"
+        elif self.workingDate == self.lastWeek:
+            self.title['text'] = "Last Week: " + dateS + "-" + dateE + " (" + self.weekNumber + ")"
+        else:
+            self.title['text'] = "Week: " + dateS + "-" + dateE + " (" + self.weekNumber + ")"
+
+    def formatDate(self, date):
+        dd = str(date.day)
+        mm = str(date.month)
+        yyyy = str(date.year)
+        if date.day < 10:
+            dd = '0' + dd
+        if date.month < 10:
+            mm = '0' + mm
+        return mm + '/' + dd + '/' + yyyy
+
+    def decrementPressed(self):
+        dd = int(self.workingDate[3:5])
+        mm = int(self.workingDate[0:2])
+        yyyy = int(self.workingDate[6:len(self.workingDate)])
+        minusWeekS = datetime.datetime(yyyy, mm, dd) - datetime.timedelta(weeks=1)
+        minusWeekE = self.workingDate
+        self.changeWorkingWeek(self.formatDate(minusWeekS), minusWeekE)
+
+    def incrementPressed(self):
+        dd = int(self.workingDate[3:5])
+        mm = int(self.workingDate[0:2])
+        yyyy = int(self.workingDate[6:len(self.workingDate)])
+        plusWeekS = datetime.datetime(yyyy, mm, dd) + datetime.timedelta(weeks=1)
+        plusWeekE = datetime.datetime(yyyy, mm, dd) + datetime.timedelta(weeks=2)
+        self.changeWorkingWeek(self.formatDate(plusWeekS), self.formatDate(plusWeekE))
 
 
 class MonthFrame(Frame):
