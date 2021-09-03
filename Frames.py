@@ -136,9 +136,11 @@ class DayFrame(TimeFrame):
 
     def entered(self, event):
         event.widget['bg'] = HIGHLIGHTCOLOR
+        event.widget['fg'] = 'black'
 
     def exit(self, event):
         event.widget['bg'] = DGRAY
+        event.widget['fg'] = OFFWHITE
         #puts back events to their color and not darkgray
         self.changeWorkingDay(self.workingDate)
 
@@ -647,9 +649,11 @@ class WeekFrame(TimeFrame):
 
     def entered(self, event):
         event.widget['bg'] = HIGHLIGHTCOLOR
+        event.widget['fg'] = 'black'
 
     def exit(self, event):
         event.widget['bg'] = DGRAY
+        event.widget['fg'] = OFFWHITE
         #puts back events to their color and not darkgray
         dd = int(self.workingDate[3:5])
         mm = int(self.workingDate[0:2])
@@ -777,6 +781,92 @@ class WeekFrame(TimeFrame):
 class MonthFrame(Frame):
     def __init__(self, window):
         Frame.__init__(self, window)
+        today = datetime.date.today()
+        #configures a working frame to display weeks
+        self.frame.rowconfigure(1, weight=160)
+        self.workingFrame = tk.Frame(self.frame, bg=DGRAY)
+        #days
+        self.workingFrame.columnconfigure(0, weight=1)
+        self.workingFrame.columnconfigure(1, weight=1)
+        self.workingFrame.columnconfigure(2, weight=1)
+        self.workingFrame.columnconfigure(3, weight=1)
+        self.workingFrame.columnconfigure(4, weight=1)
+        self.workingFrame.columnconfigure(5, weight=1)
+        self.workingFrame.columnconfigure(6, weight=1)
+        #weeks
+        self.workingFrame.rowconfigure(0, weight=1)
+        self.workingFrame.rowconfigure(1, weight=16)
+        self.workingFrame.rowconfigure(2, weight=16)
+        self.workingFrame.rowconfigure(3, weight=16)
+        self.workingFrame.rowconfigure(4, weight=16)
+        self.workingFrame.rowconfigure(5, weight=16)
+        #two dimensional array holding Labels of days
+        self.days = []
+        self.createDays()
+        #creates a working date as the first of the month
+        today = datetime.date.today()
+        self.todaysDate = self.formatDate(today)
+        self.workingDate = self.findTheFirst(today)
+        self.workingDay = getDayOfTheWeek(self.workingDate)
+        self.lastDay = self.findTheLast(today) #NEED THE LAST DAY OF THE MONTH!!!
+        print(self.lastDay)
+
+    def findTheFirst(self, today):
+        d = today.day - 1
+        return self.formatDate(today-datetime.timedelta(days=d))
+        
+    def findTheLast(self, today):
+        d = today.day - 1
+        firstDay = today-datetime.timedelta(days=d)
+        return self.formatDate(firstDay+datetime.timedelta(weeks=4))
+
+    def createDays(self):
+        for i in range(7):
+            self.days.append([Label(self.workingFrame, text=WeekFrame.daysInAWeek[i],relief="raised")])
+            for j in range(6):
+                self.days[i].append(Label(self.workingFrame, text=CreateFrame.possibleDays[0]+":\n\n\n\t          ", justify=LEFT,font=('arial', 12), fg=OFFWHITE)) #limit character
+                self.days[i][len(self.days[i])-1].bind('<Enter>', self.entered)
+                self.days[i][len(self.days[i])-1].bind('<Leave>', self.exit)
+                self.days[i][len(self.days[i])-1].bind('<Button-1>', self.clicked)
+
+    def entered(self, event):
+        event.widget['bg'] = HIGHLIGHTCOLOR
+        event.widget['fg'] = 'black'
+
+    def exit(self, event):
+        event.widget['bg'] = DGRAY
+        event.widget['fg'] = OFFWHITE
+
+    def clicked(self, event):
+        dDelta = event.widget['text'][0:2]
+        if dDelta[0] == '0':
+             dDelta = dDelta[1]
+        dDelta = int(dDelta) - 1
+
+        dd = int(self.workingDate[3:5])
+        mm = int(self.workingDate[0:2])
+        yyyy = int(self.workingDate[6:len(self.workingDate)])
+        date = self.formatDate(datetime.datetime(yyyy, mm, dd) + datetime.timedelta(days=dDelta))
+        #brings up day view of day clicked
+        Frame.allFramesInUse[0].getFrame().tkraise()
+        Frame.allFramesInUse[0].changeWorkingDay(date)
 
     def place(self):
         Frame.place(self)
+        self.workingFrame.grid(row=1, column=0, columnspan=3, sticky='nsew')
+        self.displayDays()
+
+    def displayDays(self):
+        for i in range(7):
+            for j in range(6):
+                self.days[i][j].grid(row=j,column=i,sticky='nsew')
+
+    def formatDate(self, date):
+        dd = str(date.day)
+        mm = str(date.month)
+        yyyy = str(date.year)
+        if date.day < 10:
+            dd = '0' + dd
+        if date.month < 10:
+            mm = '0' + mm
+        return mm + '/' + dd + '/' + yyyy
