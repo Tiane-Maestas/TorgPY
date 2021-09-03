@@ -475,7 +475,7 @@ class WeekFrame(TimeFrame):
         #the first index of each array is the day title the rest are the events
         self.dayLabels = []
         self.createDaySlots()
-        #deals with weird math of devide by 7
+        #deals with weird math of divide by 7
         self.setLabelWidth()
         #change title
         today = datetime.date.today()
@@ -483,6 +483,7 @@ class WeekFrame(TimeFrame):
         self.workingDate = self.findMon(today)
         self.thisWeek = self.workingDate
         self.changeTitle(self.workingDate, self.nextWeek)
+        self.changeWorkingWeek(self.thisWeek, self.nextWeek)
 
     def findMon(self, date):
         day = getDayOfTheWeek(self.todaysDate)
@@ -532,22 +533,31 @@ class WeekFrame(TimeFrame):
     def exit(self, event):
         event.widget['bg'] = DGRAY
         #puts back events to their color and not darkgray
-        #self.changeWorkingDay(self.workingDate)
+        dd = int(self.workingDate[3:5])
+        mm = int(self.workingDate[0:2])
+        yyyy = int(self.workingDate[6:len(self.workingDate)])
+        dateE = self.formatDate(datetime.datetime(yyyy, mm, dd) + datetime.timedelta(days=7))
+        self.changeWorkingWeek(self.workingDate, dateE)
 
     def clicked(self, event):
-        pass
-        #Frame.allFramesInUse[3].getFrame().tkraise()
         tindex = 0
         dindex = 0
         for list in self.dayLabels:
             try:
                 tindex = list.index(event.widget) - 1
+                break
             except ValueError:
-                continue
-            dindex+=1    
+                dindex+=1 
+               
         time = TimeFrame.timesInADay[tindex]
-
-        #Frame.allFramesInUse[3].setFrame(self.workingDate, time)
+        dd = int(self.workingDate[3:5])
+        mm = int(self.workingDate[0:2])
+        yyyy = int(self.workingDate[6:len(self.workingDate)])
+        date = self.formatDate(datetime.datetime(yyyy, mm, dd) + datetime.timedelta(days=dindex))
+        print(date)
+        #brings up day view of day clicked
+        Frame.allFramesInUse[0].getFrame().tkraise()
+        Frame.allFramesInUse[0].changeWorkingDay(date)
 
     def displayDaySlots(self):
         currentY = 0
@@ -559,18 +569,48 @@ class WeekFrame(TimeFrame):
             currentX+=WeekFrame.labelWidth
             currentY=0
 
+    def clearAllSlots(self):
+        titleIndex = True
+        for day in self.dayLabels:
+            for label in day:
+                if titleIndex == True:
+                    titleIndex = False
+                    continue
+                label['text'] = ''
+                label['bg'] = DGRAY
+            titleIndex = True
+
     def changeWorkingWeek(self, dateS, dateE):
         self.workingDate = dateS
         self.changeTitle(dateS, dateE)
         self.clearAllSlots()
-        mon = None
-        try:
-	        mon = DayEvent.allDayEvents[dateS]
-        except KeyError:
-            pass
-        if mon != None:
-            self.updateMonSlots(mon)
+        dd = int(self.workingDate[3:5])
+        mm = int(self.workingDate[0:2])
+        yyyy = int(self.workingDate[6:len(self.workingDate)])
+        dates = []
+        for i in range(7):
+            dates.append(self.formatDate(datetime.datetime(yyyy, mm, dd) + datetime.timedelta(days=i)))
+        #mon, tu, wed, th, fri, sat, sun
+        daysToFill = [None,None,None,None,None,None,None]
+        for i in range(len(dates)):
+            try:
+	            daysToFill[i] = DayEvent.allDayEvents[dates[i]]
+            except KeyError:
+                continue
 
+        for day in daysToFill:
+            if day != None:
+                self.updateDaySlot(day)
+
+    def updateDaySlot(self, day):
+        dayIndex = WeekFrame.daysInAWeek.index(day.dayOfTheWeek)
+        for event in day.eventlist:
+            slotindex = TimeFrame.timesInADay.index(event.startTime) + 1
+            endindex = TimeFrame.timesInADay.index(event.endTime) + 1
+            self.dayLabels[dayIndex][slotindex]['text'] = event
+            while slotindex < endindex:
+                self.dayLabels[dayIndex][slotindex]['bg'] = event.color
+                slotindex += 1
 
     def changeTitle(self, dateS, dateE):
         #finds the new week number
@@ -581,7 +621,6 @@ class WeekFrame(TimeFrame):
         yr = newWeek.year
         weekNumber = ((newWeek - datetime.datetime(yr,1,1)).days/7) + 1
         self.weekNumber = str(int(weekNumber))
-        
         if self.workingDate == self.thisWeek:
             self.title['text'] = "This Week: " + dateS + "-" + dateE + " (" + self.weekNumber + ")"
         elif self.workingDate == self.nextWeek:
