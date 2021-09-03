@@ -427,9 +427,109 @@ class CreateDayEventFrame(CreateFrame):
         CreateFrame.__init__(self, window)
         #changes title
         self.title['text'] = 'Create Day Event'
+        #adds a scroll bar in place of one sidebar
+        self.scrollbar = Scrollbar(self.frame, orient=VERTICAL, bg='black', command=self.workingCanvas.yview)
+        self.workingCanvas.configure(yscrollcommand=self.scrollbar.set)
+        self.workingCanvas.bind('<Configure>', lambda e: self.workingCanvas.configure(scrollregion = self.workingCanvas.bbox('all')))
+        #initializes a scrolling canvas to enable proper use of scrollbar through a canvas window in the working canvas
+        #this uses a canva packed into a frame within the timeEventCanvas window
+        self.workingFrame = tk.Frame(self.workingCanvas, bg='black')
+        self.workingCanvas.create_window((0,0),window=self.workingFrame, anchor='nw')
+        #self.workingFrame.pack(expand=1) #centers but disables scrollbar
+        self.scrollingCanvas = Canvas(self.workingFrame, height=Frame.screenheight*2, bg=DGRAY, highlightthickness=0)
+        self.scrollingCanvas.pack(expand=1)
+        #creates a frame for each line to allow easy packing
+        self.lines = []
+        for i in range(len(TimeFrame.timesInADay)+2):
+            self.lines.append(tk.Frame(self.scrollingCanvas, bg=DGRAY))
+        #first line will select date and how often to repeat the day event
+        self.promptDate = Label(self.lines[0], text='Enter Date: ', bg=DGRAY, relief='flat', fg=OFFWHITE, font=('Arial',14))
+        self.dd = StringVar()
+        self.dd.set('dd')
+        self.dayOptions = OptionMenu(self.lines[0], self.dd, *CreateFrame.possibleDays)
+        self.mm = StringVar()
+        self.mm.set('mm')
+        self.monthOptions = OptionMenu(self.lines[0], self.mm, *CreateFrame.possibleMonths)
+        self.yyyy = StringVar()
+        self.yyyy.set('yyyy')
+        self.yearOptions = OptionMenu(self.lines[0], self.yyyy, *CreateFrame.possibleYears)
+        self.promptRepeat1 = Label(self.lines[1], text='Repeat this Day Event every ', bg=DGRAY, relief='flat', fg=OFFWHITE, font=('Arial',14))
+        self.promptRepeat2 = Label(self.lines[1], text=' days for ', bg=DGRAY, relief='flat', fg=OFFWHITE, font=('Arial',14))
+        self.promptRepeat3 = Label(self.lines[1], text=' iterations.', bg=DGRAY, relief='flat', fg=OFFWHITE, font=('Arial',14))
+        self.dayRepeat = IntVar()
+        self.dayRepeat.set(0)
+        self.dayRepeatOptions = OptionMenu(self.lines[1], self.dayRepeat, 0,1,2,3,4,5,6,7)
+        self.dayRepeatInterval = IntVar()
+        self.dayRepeatInterval.set(0)
+        iter = []
+        for i in range(52):
+            iter.append(i)
+        self.dayRepeatIntervalOptions = OptionMenu(self.lines[1], self.dayRepeatInterval, *iter)
+        #double array to hold a list of widgets to place on each line
+        self.linesInfo = []
+        self.endTimes = []
+        self.colors = []
+        for i in range(len(TimeFrame.timesInADay)+2):
+            if i == 0 or i == 1:
+                continue
+            lineInfo = [] 
+            #line start time
+            lineInfo.append(Label(self.lines[i], text=TimeFrame.timesInADay[i-2]+': ', bg=DGRAY, relief='flat', fg=OFFWHITE, font=('Arial',14)))
+            #line title entry
+            lineInfo.append(tk.Entry(self.lines[i], width=32, font=('Arial',14), bg='black'))
+            #line end entry
+            self.endTimes.append(StringVar())
+            self.endTimes[i-2].set('End Time')
+            lineInfo.append(OptionMenu(self.lines[i], self.endTimes[i-2], *TimeFrame.timesInADay))
+            #line color entry
+            self.colors.append(StringVar())
+            self.colors[i-2].set('Color')
+            lineInfo.append(OptionMenu(self.lines[i], self.colors[i-2], *CreateFrame.possibleColors))
+            #adds line of widgets to list of all lines
+            self.linesInfo.append(lineInfo)
     
     def place(self):
         CreateFrame.place(self)
+        #places the scrollbar in place of sidebar
+        self.scrollbar.grid(row=1,column=2,sticky='nsew')
+        #paces all line frames
+        for line in self.lines:
+            line.pack()
+        #places first line of options
+        self.promptDate.pack(side=LEFT, fill=X)
+        self.monthOptions.pack(side=LEFT, fill=X)
+        self.dayOptions.pack(side=LEFT, fill=X)
+        self.yearOptions.pack(side=LEFT, fill=X)
+        self.promptRepeat1.pack(side=LEFT, fill=X)
+        self.dayRepeatOptions.pack(side=LEFT, fill=X)
+        self.promptRepeat2.pack(side=LEFT, fill=X)
+        self.dayRepeatIntervalOptions.pack(side=LEFT, fill=X)
+        self.promptRepeat3.pack(side=LEFT, fill=X)
+        #places widgets on remaining lines
+        for line in self.linesInfo:
+            for widgets in line:
+                widgets.pack(side=LEFT, fill=X)
+
+    def setFrame(self, date):
+        dd = date[3:5]
+        mm = date[0:2]
+        index = self.monthsInNum.index(mm)
+        mm = self.possibleMonths[index]
+        yyyy = date[6:len(date)]
+        self.dd.set(dd)
+        self.mm.set(mm)
+        self.yyyy.set(yyyy)
+        self.clearFrame()
+
+    def clearFrame(self):
+        self.dayRepeatInterval.set(0)
+        self.dayRepeat.set(0)
+        for widget in self.endTimes:
+            widget.set('End Time')
+        for widget in self.colors:
+            widget.set('Color')
+        for line in self.linesInfo:
+            line[1].delete(0, END)
 
     def decrementPressed(self):
         Frame.allFramesInUse[3].getFrame().tkraise()
@@ -521,11 +621,29 @@ class WeekFrame(TimeFrame):
     def createDaySlots(self):
         for i in range(len(WeekFrame.daysInAWeek)):
             self.dayLabels.append([Label(self.workingCanvas, text=WeekFrame.daysInAWeek[i], anchor='center', relief='flat', bg=LRGRAY, fg=OFFWHITE, font=('Arial',12))])
+            self.dayLabels[i][0].bind('<Enter>', self.enteredTitle)
+            self.dayLabels[i][0].bind('<Leave>', self.exitTitle)
+            self.dayLabels[i][0].bind('<Button-1>', self.clickedTitle)
             for j in range(len(self.timeLabels)-1):
                 self.dayLabels[i].append(Label(self.workingCanvas, text='', anchor='w', relief='flat', bg=DGRAY, fg=OFFWHITE, font=('Arial',12)))
                 self.dayLabels[i][j+1].bind('<Enter>', self.entered)
                 self.dayLabels[i][j+1].bind('<Leave>', self.exit)
                 self.dayLabels[i][j+1].bind('<Button-1>', self.clicked)
+
+    def enteredTitle(self, event):
+        event.widget['bg'] = DGRAY
+
+    def exitTitle(self, event):
+        event.widget['bg'] = LRGRAY
+
+    def clickedTitle(self, event):
+        index = WeekFrame.daysInAWeek.index(event.widget['text'])
+        dd = int(self.workingDate[3:5])
+        mm = int(self.workingDate[0:2])
+        yyyy = int(self.workingDate[6:len(self.workingDate)])
+        date = self.formatDate(datetime.datetime(yyyy, mm, dd) + datetime.timedelta(days=index))
+        Frame.allFramesInUse[4].getFrame().tkraise()
+        Frame.allFramesInUse[4].setFrame(date)
 
     def entered(self, event):
         event.widget['bg'] = HIGHLIGHTCOLOR
@@ -554,7 +672,6 @@ class WeekFrame(TimeFrame):
         mm = int(self.workingDate[0:2])
         yyyy = int(self.workingDate[6:len(self.workingDate)])
         date = self.formatDate(datetime.datetime(yyyy, mm, dd) + datetime.timedelta(days=dindex))
-        print(date)
         #brings up day view of day clicked
         Frame.allFramesInUse[0].getFrame().tkraise()
         Frame.allFramesInUse[0].changeWorkingDay(date)
@@ -607,7 +724,7 @@ class WeekFrame(TimeFrame):
         for event in day.eventlist:
             slotindex = TimeFrame.timesInADay.index(event.startTime) + 1
             endindex = TimeFrame.timesInADay.index(event.endTime) + 1
-            self.dayLabels[dayIndex][slotindex]['text'] = event
+            self.dayLabels[dayIndex][slotindex]['text'] = day.dayOfTheWeek[0] +': ' + event.title + ', ' + event.startTime
             while slotindex < endindex:
                 self.dayLabels[dayIndex][slotindex]['bg'] = event.color
                 slotindex += 1
