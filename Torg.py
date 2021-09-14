@@ -104,6 +104,7 @@ def main():
     minimize_button = Button(title_bar, text=' − ',command=minimize_me,bg='black',padx=2,pady=2,bd=0,fg=OFFWHITE,font=("arial", 13),highlightthickness=0)
     title_bar_title = Label(title_bar, text=tk_title, bg='black',bd=0,fg=OFFWHITE,font=("arial", 13),highlightthickness=0, anchor=CENTER)
 
+    #Create menus!
     viewMenu = Menubutton(title_bar, activebackground='orange',text='View',font=("arial", 13), fg=OFFWHITE, bg='black', bd=0)
     viewOptions = Menu(viewMenu, tearoff=0, activebackground='orange', bg='black', bd=0, relief='solid', border=0)
     viewMenu["menu"] = viewOptions
@@ -260,8 +261,6 @@ def main():
     placeFrames()
     #allows access of all working frames to all frames through inheritence
     allFrames[0].setAllFrames(allFrames)
-
-    #Create menus!
 
     #places dayview on top
     showFrame(allFrames[0].getFrame())
